@@ -11,11 +11,11 @@ pipeline {
     }
 
     stages {
-        stage('Test') {
-    steps {
-        echo 'Pipeline is running!'
-    }
-}
+        stage('Test Stage') {
+            steps {
+                echo 'Pipeline is running!'
+            }
+        }
 
     }
 
