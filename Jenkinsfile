@@ -33,6 +33,29 @@ pipeline {
                 bat 'mvn clean package'
             }
         }
+                stage('3. Run Unit Tests') {
+            steps {
+                echo 'Running unit tests...'
+                bat 'mvn test'  // Changed 'bat' to 'sh' for Linux
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        
+        stage('4. Generate JAR Package') {
+            steps {
+                echo 'Creating JAR package...'
+                bat 'mvn package -DskipTests'  // Changed 'bat' to 'sh' for Linux
+            }
+            post {
+                success {
+                    archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true, fingerprint: true
+                }
+            }
+        }
 
         stage('SonarQube Analysis') {
             when {
