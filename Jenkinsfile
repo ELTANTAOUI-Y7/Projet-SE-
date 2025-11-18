@@ -62,12 +62,11 @@ pipeline {
             }
         }
 
-        stage('Run Jetty') {
-            steps {
-                // This will block the pipeline while Jetty runs
-                sh 'mvn jetty:run'
-            }
-        }
+// stage('Run Jetty') {
+//     steps {
+//         sh 'mvn jetty:run'
+//     }
+// }
     }
 
     post {
