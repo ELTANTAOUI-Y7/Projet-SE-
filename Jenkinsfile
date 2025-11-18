@@ -17,8 +17,8 @@ pipeline {
 
     environment {
         MAVEN_OPTS = '-Dmaven.test.failure.ignore=false'
-        SONAR_HOST_URL = credentials('https://undefaced-erich-nondisciplining.ngrok-free.dev ')  // Jenkins credential ID for Sonar server URL
-        SONAR_AUTH_TOKEN = credentials('squ_054bafd83ef7067698e514a1ce98e982584f1bf5') // Jenkins credential ID for Sonar token
+        SONAR_HOST_URL = 'http://localhost:9000'  // Jenkins credential ID for Sonar server URL
+        SONAR_AUTH_TOKEN = credentials('Ecommerce') // Jenkins credential ID for Sonar token
     }
 
     stages {
@@ -30,7 +30,7 @@ pipeline {
 
         stage('Build & Package') {
             steps {
-                sh 'mvn clean package'
+                bat 'mvn clean package'
             }
         }
 
@@ -42,8 +42,8 @@ pipeline {
                 SONAR_SCANNER_OPTS = '-Xmx512m'
             }
             steps {
-                withSonarQubeEnv('Sonar-Server') {
-                    sh """
+                withSonarQubeEnv('SonarQube') {
+                    bat """
                         mvn sonar:sonar \
                         -Dsonar.projectKey=Projet-SE \
                         -Dsonar.host.url=$SONAR_HOST_URL \
@@ -64,7 +64,7 @@ pipeline {
 
 // stage('Run Jetty') {
 //     steps {
-//         sh 'mvn jetty:run'
+//         bat 'mvn jetty:run'
 //     }
 // }
     }
