@@ -1,4 +1,4 @@
-# E-commerce Website Project
+# Simple E-commerce (Projet SE)
 
 ## Overview
 This project is an e-commerce website built using Java EE (JEE) technologies, along with HTML, CSS, and Bootstrap for the frontend. Hibernate is used for object-relational mapping.
