@@ -83,6 +83,12 @@ pipeline {
         }
         failure {
             echo 'Pipeline failed!'
+
+    stages {
+        stage('Test Stage') {
+            steps {
+                echo 'Pipeline is running!'
+            }
         }
     }
 }
