@@ -1,103 +1,88 @@
 pipeline {
     agent any
-
+    
     tools {
-        jdk 'JDK17'       
-        maven 'Maven3'    
+        jdk 'JDK' // Configure JDK tool in Jenkins Global Tool Configuration (e.g., JDK-11, JDK-17, or JDK)
+        maven 'maven' // Configure Maven tool in Jenkins Global Tool Configuration
     }
-
-    options {
-        timestamps()
-        disableConcurrentBuilds()
-    }
-
-    triggers {
-        githubPush()      // Automatically builds when GitHub push occurs
-    }
-
-    environment {
-        MAVEN_OPTS = '-Dmaven.test.failure.ignore=false'
-        SONAR_HOST_URL = 'http://localhost:9000'  // Jenkins credential ID for Sonar server URL
-        SONAR_AUTH_TOKEN = credentials('Ecommerce') // Jenkins credential ID for Sonar token
-    }
-
+    
     stages {
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
-                checkout scm  // Automatically checks out the current branch
+                checkout scm: [
+                    $class: 'GitSCM',
+                    branches: [[name: '*/main']], // or '*/master' depending on your branch
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/ELTANTAOUI-Y7/Projet-SE-.git',
+                        credentialsId: '' // Add your GitHub credentials ID if repository is private
+                    ]]
+                ]
             }
         }
-
-        stage('Build & Package') {
+        
+        stage('Build') {
             steps {
-                bat 'mvn clean package'
+                sh 'mvn clean compile'
             }
         }
-                stage('3. Run Unit Tests') {
+        
+        stage('Test') {
             steps {
-                echo 'Running unit tests...'
-                bat 'mvn test'  // Changed 'bat' to 'sh' for Linux
+                sh 'mvn clean test'
             }
             post {
                 always {
-                    junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+                    junit 'target/surefire-reports/*.xml' // Publish test results
                 }
             }
         }
         
-        stage('4. Generate JAR Package') {
+        stage('Generate Coverage Report') {
             steps {
-                echo 'Creating JAR package...'
-                bat 'mvn package -DskipTests'  // Changed 'bat' to 'sh' for Linux
-            }
-            post {
-                success {
-                    archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true, fingerprint: true
-                }
-            }
-        }
-
-        stage('SonarQube Analysis') {
-            when {
-                expression { return env.SONAR_HOST_URL != null }
-            }
-            environment {
-                SONAR_SCANNER_OPTS = '-Xmx512m'
-            }
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    bat """
-                        mvn sonar:sonar \
-                        -Dsonar.projectKey=Projet-SE \
-                        -Dsonar.host.url=$SONAR_HOST_URL \
-                        -Dsonar.login=$SONAR_AUTH_TOKEN
-                    """
-                }
+                sh 'mvn jacoco:report'
             }
             post {
                 always {
-                    script {
-                        timeout(time: 1, unit: 'HOURS') {
-                            waitForQualityGate abortPipeline: true
-                        }
-                    }
+                    publishHTML([
+                        reportDir: 'target/site/jacoco',
+                        reportFiles: 'index.html',
+                        reportName: 'JaCoCo Coverage Report'
+                    ])
                 }
             }
         }
-
-// stage('Run Jetty') {
-//     steps {
-//         bat 'mvn jetty:run'
-//     }
-// }
+        
+        stage('SonarQube Analysis') {
+            environment {
+                SONAR_HOST_URL = 'http://localhost:9000' // Replace with your SonarQube URL
+                SONAR_AUTH_TOKEN = credentials('sonarqube') // Store your token in Jenkins credentials
+            }
+            steps {
+                // Use fully qualified plugin name - no need to add to pom.xml
+                // Configure SonarQube to read JaCoCo reports
+                sh '''
+                    mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar \
+                        -Dsonar.projectKey=projet-se \
+                        -Dsonar.host.url=$SONAR_HOST_URL \
+                        -Dsonar.login=$SONAR_AUTH_TOKEN \
+                        -Dsonar.java.coveragePlugin=jacoco \
+                        -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+                        -Dsonar.coverage.exclusions=**/entities/**,**/servlets/**,**/helper/**
+                '''
+            }
+        }
+        
     }
-
+    
     post {
+        always {
+            cleanWs() // Clean workspace after build
+        }
         success {
-            echo "Pipeline succeeded!"
+            echo 'Pipeline succeeded!'
         }
         failure {
-            echo "Pipeline failed. Check logs above."
+            echo 'Pipeline failed!'
         }
     }
 }
