@@ -28,7 +28,11 @@ public class ProductOperationServlet extends HttpServlet {
         try ( PrintWriter out = response.getWriter()) {
             // check the type of operation ( addCategory or product )
             String op = request.getParameter("operation");
-            if(op.trim().equals("addCategory")){
+            if(op == null){
+                HttpSession httpSession=request.getSession();
+                httpSession.setAttribute("message", "Invalid operation");
+                response.sendRedirect("admin.jsp");
+            } else if(op.trim().equals("addCategory")){
                 // add category
                 // fetching category data 
                 String title = request.getParameter("catTitle");
@@ -88,7 +92,9 @@ public class ProductOperationServlet extends HttpServlet {
                 response.sendRedirect("admin.jsp");
                 
             }else {
-                
+                HttpSession httpSession=request.getSession();
+                httpSession.setAttribute("message", "Unknown operation");
+                response.sendRedirect("admin.jsp");
             }
         }
     }
