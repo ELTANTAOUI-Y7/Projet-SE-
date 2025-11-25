@@ -11,7 +11,7 @@ pipeline {
             steps {
                 checkout scm: [
                     $class: 'GitSCM',
-                    branches: [[name: '*/souhaib']], // or '*/master' depending on your branch
+                    branches: [[name: '*/main']], // or '*/master' depending on your branch
                     userRemoteConfigs: [[
                         url: 'https://github.com/ELTANTAOUI-Y7/Projet-SE-.git',
                         credentialsId: '' // Add your GitHub credentials ID if repository is private
