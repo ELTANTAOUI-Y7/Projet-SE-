@@ -36,7 +36,7 @@ public class RegisterServlet extends HttpServlet {
                 User user =new User(userName, userEmail, userPassword, userPhone,"default.jpg", userAddress,"normal");
                 
                 // using hibernate and perform a transaction
-                Session hibernateSession = FactoryProvider.getFactory().openSession();
+                Session hibernateSession = getSessionFactory().openSession();
                     Transaction tx= hibernateSession.beginTransaction();
                     int userId =(int) hibernateSession.save(user);
                     tx.commit();
@@ -71,6 +71,13 @@ public class RegisterServlet extends HttpServlet {
     @Override
     public String getServletInfo() {
         return "Short description";
+    }
+
+    /**
+     * Allows tests to inject a mocked {@link SessionFactory}.
+     */
+    protected org.hibernate.SessionFactory getSessionFactory() {
+        return FactoryProvider.getFactory();
     }
 
 }
