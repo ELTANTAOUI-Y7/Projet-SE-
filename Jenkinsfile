@@ -1,14 +1,5 @@
 pipeline {
     agent any
-<<<<<<< HEAD
-
-    stages {
-        stage('Test Stage') {
-            steps {
-                echo 'Pipeline is running!'
-            }
-        }
-=======
     tools {
         maven 'Maven-3.9.11'
         jdk 'JDK-17'
@@ -51,7 +42,7 @@ pipeline {
                 sh 'mvn clean compile -DskipTests'
             }
         }
-         stage('3. Run Tests with Failure Tolerance') {
+        stage('3. Run Tests with Failure Tolerance') {
             steps {
                 script {
                     // Run tests but don't fail the pipeline on test failures
@@ -116,6 +107,5 @@ pipeline {
             echo 'Cleaning workspace...'
             cleanWs()
         }
->>>>>>> afd0cc64c82fa7dac98bb8ca3d39bffbcb448224
     }
 }
