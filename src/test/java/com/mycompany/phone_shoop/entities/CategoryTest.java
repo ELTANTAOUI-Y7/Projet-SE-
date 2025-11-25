@@ -36,5 +36,16 @@ public class CategoryTest {
 
         assertEquals("Category{categoryId=3, categoryTitle=Wearables, categoryDescription=Smart watches}", category.toString());
     }
+
+    @Test
+    public void setProductsReplacesCollection() {
+        Category category = new Category();
+        Product product = new Product();
+        java.util.List<Product> products = java.util.Arrays.asList(product);
+
+        category.setProducts(products);
+
+        assertSame(products, category.getProducts());
+    }
 }
 

@@ -29,5 +29,16 @@ public class UserTest {
 
         assertEquals("User{userId=8, userName=Mike, userEmail=mike@mail.com, userPassword=secret, userPhone=999, userPic=pic.jpg, userAddress=Somewhere}", user.toString());
     }
+
+    @Test
+    public void constructorWithoutIdPopulatesFields() {
+        User user = new User("Luke", "luke@mail.com", "pass", "321", "pic.png", "addr", "normal");
+
+        assertEquals("Luke", user.getUserName());
+        assertEquals("luke@mail.com", user.getUserEmail());
+        assertEquals("normal", user.getUserType());
+        // userId stays default
+        assertEquals(0, user.getUserId());
+    }
 }
 

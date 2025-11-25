@@ -63,6 +63,21 @@ public class RegisterServletTest {
     }
 
     @Test
+    public void processRequestSetsFailureMessageWhenExceptionOccurs() throws Exception {
+        when(request.getParameter("name")).thenReturn("Jane");
+        when(request.getParameter("email")).thenReturn("jane@mail.com");
+        when(request.getParameter("password")).thenReturn("secret");
+        when(request.getParameter("phone")).thenReturn("123456");
+        when(request.getParameter("address")).thenReturn("somewhere");
+
+        RegisterServlet servlet = new FailingRegisterServlet();
+        servlet.processRequest(request, response);
+
+        verify(session).setAttribute(eq("message"), org.mockito.ArgumentMatchers.contains("Something went wrong"));
+        verify(response).sendRedirect("register.jsp");
+    }
+
+    @Test
     public void doGetDelegatesToProcessRequest() throws Exception {
         TrackingRegisterServlet servlet = new TrackingRegisterServlet();
 
@@ -108,6 +123,13 @@ public class RegisterServletTest {
         @Override
         protected void processRequest(HttpServletRequest request, HttpServletResponse response) {
             called = true;
+        }
+    }
+
+    private static class FailingRegisterServlet extends RegisterServlet {
+        @Override
+        protected SessionFactory getSessionFactory() {
+            throw new RuntimeException("fail");
         }
     }
 }
