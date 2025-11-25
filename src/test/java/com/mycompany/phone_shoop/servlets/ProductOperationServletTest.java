@@ -8,6 +8,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -27,6 +28,7 @@ public class ProductOperationServletTest {
     private HttpServletRequest request;
     private HttpServletResponse response;
     private HttpSession session;
+    private ServletContext servletContext;
     private StringWriter writer;
 
     @Before
@@ -34,9 +36,11 @@ public class ProductOperationServletTest {
         request = mock(HttpServletRequest.class);
         response = mock(HttpServletResponse.class);
         session = mock(HttpSession.class);
+        servletContext = mock(ServletContext.class);
         writer = new StringWriter();
 
         when(request.getSession()).thenReturn(session);
+        when(request.getServletContext()).thenReturn(servletContext);
         when(response.getWriter()).thenReturn(new PrintWriter(writer));
     }
 
@@ -88,7 +92,7 @@ public class ProductOperationServletTest {
         when(request.getParameter("pDiscount")).thenReturn("10");
         when(request.getParameter("pQuantity")).thenReturn("5");
         when(request.getParameter("catId")).thenReturn("3");
-        when(request.getRealPath("img")).thenReturn("/tmp");
+        when(servletContext.getRealPath("img")).thenReturn("/tmp");
 
         Part part = mock(Part.class);
         when(part.getSubmittedFileName()).thenReturn("pic.png");
