@@ -11,7 +11,7 @@ pipeline {
             steps {
                 checkout scm: [
                     $class: 'GitSCM',
-                    branches: [[name: '*/main']], // or '*/master' depending on your branch
+                    branches: [[name: '*/souhaib']], // or '*/master' depending on your branch
                     userRemoteConfigs: [[
                         url: 'https://github.com/ELTANTAOUI-Y7/Projet-SE-.git',
                         credentialsId: '' // Add your GitHub credentials ID if repository is private
@@ -44,7 +44,7 @@ pipeline {
             }
             steps {
                 // Use fully qualified plugin name - no need to add to pom.xml
-                sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar -Dsonar.projectKey=projet-se -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_AUTH_TOKEN'
+                sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar -Dsonar.projectKey=projet-se -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml'
             }
         }
         
