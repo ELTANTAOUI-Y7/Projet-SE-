@@ -28,26 +28,11 @@ pipeline {
         
         stage('Test') {
             steps {
-                sh 'mvn clean test'
+                sh 'mvn test'
             }
             post {
                 always {
                     junit 'target/surefire-reports/*.xml' // Publish test results
-                }
-            }
-        }
-        
-        stage('Generate Coverage Report') {
-            steps {
-                sh 'mvn jacoco:report'
-            }
-            post {
-                always {
-                    publishHTML([
-                        reportDir: 'target/site/jacoco',
-                        reportFiles: 'index.html',
-                        reportName: 'JaCoCo Coverage Report'
-                    ])
                 }
             }
         }
@@ -59,16 +44,7 @@ pipeline {
             }
             steps {
                 // Use fully qualified plugin name - no need to add to pom.xml
-                // Configure SonarQube to read JaCoCo reports
-                sh '''
-                    mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar \
-                        -Dsonar.projectKey=projet-se \
-                        -Dsonar.host.url=$SONAR_HOST_URL \
-                        -Dsonar.login=$SONAR_AUTH_TOKEN \
-                        -Dsonar.java.coveragePlugin=jacoco \
-                        -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-                        -Dsonar.coverage.exclusions=**/entities/**,**/servlets/**,**/helper/**
-                '''
+                sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar -Dsonar.projectKey=projet-se -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_AUTH_TOKEN'
             }
         }
         
@@ -83,12 +59,6 @@ pipeline {
         }
         failure {
             echo 'Pipeline failed!'
-
-    stages {
-        stage('Test Stage') {
-            steps {
-                echo 'Pipeline is running!'
-            }
-        }
     }
+}
 }
