@@ -37,7 +37,7 @@ public class ProductOperationServlet extends HttpServlet {
                 cat.setCategoryTitle(title);
                 cat.setCategoryDescription(description);
                 // category database save;
-                CategoryDao catDao=new CategoryDao(FactoryProvider.getFactory());
+                CategoryDao catDao = createCategoryDao();
                 catDao.saveCategory(cat);
                 // add message of success to session
                 HttpSession httpSession=request.getSession();
@@ -63,7 +63,7 @@ public class ProductOperationServlet extends HttpServlet {
                 p.setpPhoto(part.getSubmittedFileName());
                 
                 // get Category by id 
-                CategoryDao catDao = new CategoryDao(FactoryProvider.getFactory());
+                CategoryDao catDao = createCategoryDao();
                 Category cat=(Category)catDao.getCategoryById(catId);
                 p.setCategory(cat);
                 
@@ -72,20 +72,13 @@ public class ProductOperationServlet extends HttpServlet {
                 String path = request.getRealPath("img")+File.separator+"products"+File.separator+part.getSubmittedFileName();
                 
                 try {
-                    // uploading code 
-                    FileOutputStream fos = new FileOutputStream(path);
-                    InputStream is = part.getInputStream();
-                    // reading and writing data
-                    byte[] data = new byte[is.available()];
-                    is.read(data);
-                    fos.write(data);
-                    fos.close();
+                    saveFile(part, path);
                 }catch(Exception e) {
                     e.printStackTrace();
                 }
                 
                 // save the new product into db 
-                ProductDao pDao=new ProductDao(FactoryProvider.getFactory());
+                ProductDao pDao = createProductDao();
                 pDao.saveProduct(p);
 
                 
@@ -116,5 +109,25 @@ public class ProductOperationServlet extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
+
+    /**
+     * Factory hooks that let tests inject mocked collaborators.
+     */
+    protected CategoryDao createCategoryDao() {
+        return new CategoryDao(FactoryProvider.getFactory());
+    }
+
+    protected ProductDao createProductDao() {
+        return new ProductDao(FactoryProvider.getFactory());
+    }
+
+    protected void saveFile(Part part, String path) throws IOException {
+        FileOutputStream fos = new FileOutputStream(path);
+        InputStream is = part.getInputStream();
+        byte[] data = new byte[is.available()];
+        is.read(data);
+        fos.write(data);
+        fos.close();
+    }
 
 }
