@@ -19,6 +19,7 @@ public class RegisterServlet extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         try ( PrintWriter out = response.getWriter()) {
           
+            HttpSession httpSession=request.getSession();
             try {
                 // get the parameters of http.1/post
                 String userName = request.getParameter("name");
@@ -36,20 +37,21 @@ public class RegisterServlet extends HttpServlet {
                 User user =new User(userName, userEmail, userPassword, userPhone,"default.jpg", userAddress,"normal");
                 
                 // using hibernate and perform a transaction
-                Session hibernateSession = FactoryProvider.getFactory().openSession();
+                Session hibernateSession = getSessionFactory().openSession();
                     Transaction tx= hibernateSession.beginTransaction();
                     int userId =(int) hibernateSession.save(user);
                     tx.commit();
                 hibernateSession.close();
                 
                 // create a session with message for registered user
-                HttpSession httpSession=request.getSession();
                 httpSession.setAttribute("message", "Marhba :) You have successfuly registerd in our website !! Your id : "+userId);
                 
                 response.sendRedirect("register.jsp");
                 
             } catch(Exception e) {
                 e.printStackTrace();
+                httpSession.setAttribute("message", "Something went wrong !! Please try again later.");
+                response.sendRedirect("register.jsp");
             }
             
             
@@ -71,6 +73,13 @@ public class RegisterServlet extends HttpServlet {
     @Override
     public String getServletInfo() {
         return "Short description";
+    }
+
+    /**
+     * Allows tests to inject a mocked {@link SessionFactory}.
+     */
+    protected org.hibernate.SessionFactory getSessionFactory() {
+        return FactoryProvider.getFactory();
     }
 
 }

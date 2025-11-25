@@ -10,6 +10,7 @@ import org.hibernate.query.Query;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -66,6 +67,17 @@ public class CategoryDaoTest {
 
         assertSame(category, result);
         verify(session).close();
+    }
+
+    @Test
+    public void getCategoryByIdReturnsNullWhenExceptionThrown() {
+        SessionFactory faultyFactory = mock(SessionFactory.class);
+        when(faultyFactory.openSession()).thenThrow(new RuntimeException("boom"));
+        CategoryDao dao = new CategoryDao(faultyFactory);
+
+        Category result = dao.getCategoryById(99);
+
+        assertNull(result);
     }
 }
 

@@ -26,7 +26,7 @@ public class LoginServlet extends HttpServlet {
             // validations 
             
             // authenticating user 
-            UserDao userDao=new UserDao(FactoryProvider.getFactory());
+            UserDao userDao = createUserDao();
             User user = userDao.getUserByEmailAndPassword(email, password);
             HttpSession httpSession=request.getSession();
             if(user == null) {
@@ -65,4 +65,10 @@ public class LoginServlet extends HttpServlet {
         return "Short description";
     }// </editor-fold>
 
+    /**
+     * Factory method used to instantiate the {@link UserDao}. Overridable for tests.
+     */
+    protected UserDao createUserDao() {
+        return new UserDao(FactoryProvider.getFactory());
+    }
 }

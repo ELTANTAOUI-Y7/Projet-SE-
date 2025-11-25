@@ -10,6 +10,7 @@ import org.hibernate.query.Query;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -43,6 +44,17 @@ public class ProductDaoTest {
         verify(session).close();
         // method should indicate persistence succeeded
         assertEquals(true, result);
+    }
+
+    @Test
+    public void saveProductReturnsFalseWhenExceptionOccurs() {
+        SessionFactory faultyFactory = mock(SessionFactory.class);
+        when(faultyFactory.openSession()).thenThrow(new RuntimeException("fail"));
+        ProductDao dao = new ProductDao(faultyFactory);
+
+        boolean result = dao.saveProduct(new Product());
+
+        assertFalse(result);
     }
 
     @Test

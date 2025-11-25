@@ -6,6 +6,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import org.junit.Before;
 import org.junit.Test;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -40,6 +41,17 @@ public class UserDaoTest {
 
         assertSame(user, result);
         verify(session).close();
+    }
+
+    @Test
+    public void getUserByEmailAndPasswordReturnsNullWhenExceptionOccurs() {
+        SessionFactory faultyFactory = mock(SessionFactory.class);
+        when(faultyFactory.openSession()).thenThrow(new RuntimeException("fail"));
+        UserDao dao = new UserDao(faultyFactory);
+
+        User result = dao.getUserByEmailAndPassword("mail@host.com", "secret");
+
+        assertNull(result);
     }
 }
 
