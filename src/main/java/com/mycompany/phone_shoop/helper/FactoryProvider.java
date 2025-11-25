@@ -23,7 +23,12 @@ public class FactoryProvider {
                 factory = configurationSupplier.get().buildSessionFactory();
             }
         } catch(Exception e) {
+            System.err.println("Error creating Hibernate SessionFactory:");
             e.printStackTrace();
+            throw new RuntimeException("Failed to initialize Hibernate SessionFactory. Check your database connection and configuration.", e);
+        }
+        if (factory == null) {
+            throw new RuntimeException("Hibernate SessionFactory is null. Check your database connection and configuration.");
         }
         return factory;
     }

@@ -30,6 +30,9 @@ public class ProductDao {
     }
     
     public List<Product> getAllProducts() {
+        if (this.factory == null) {
+            throw new IllegalStateException("SessionFactory is null. Cannot retrieve products.");
+        }
         Session s=this.factory.openSession();
         Query query=s.createQuery("from Product");
         List<Product> list = query.list();
@@ -39,6 +42,9 @@ public class ProductDao {
     
     // get all products of given category 
     public List<Product> getAllProductsByCatId(int cid) {
+        if (this.factory == null) {
+            throw new IllegalStateException("SessionFactory is null. Cannot retrieve products.");
+        }
         Session s=this.factory.openSession();
         Query query=s.createQuery("from Product as p where p.category.categoryId =: id");
         query.setParameter("id", cid);

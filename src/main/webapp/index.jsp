@@ -10,16 +10,26 @@
                     String cat=request.getParameter("category");
                     
                     ProductDao productDao = new ProductDao(FactoryProvider.getFactory());
-                    List<Product> plist = null;
-                    if(cat==null||cat.trim().equals("all")) {                    
-                        plist=productDao.getAllProducts();
-                    }else{
-                        int cid =Integer.parseInt(cat.trim());
-                        plist=productDao.getAllProductsByCatId(cid);
+                    List<Product> plist = new java.util.ArrayList<Product>();
+                    try {
+                        if(cat==null||cat.trim().equals("all")) {                    
+                            plist=productDao.getAllProducts();
+                        }else{
+                            int cid =Integer.parseInt(cat.trim());
+                            plist=productDao.getAllProductsByCatId(cid);
+                        }
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                        // plist reste une liste vide en cas d'erreur
                     }
                     
                     CategoryDao  cdao = new CategoryDao(FactoryProvider.getFactory());
-                    List<Category> clist=cdao.getCategories();
+                    List<Category> clist = new java.util.ArrayList<Category>();
+                    try {
+                        clist=cdao.getCategories();
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                    }
                     
                     
                 %>

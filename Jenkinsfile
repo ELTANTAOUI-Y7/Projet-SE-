@@ -5,13 +5,15 @@ pipeline {
         jdk 'JDK' // Configure JDK tool in Jenkins Global Tool Configuration (e.g., JDK-11, JDK-17, or JDK)
         maven 'maven' // Configure Maven tool in Jenkins Global Tool Configuration
     }
+
+    
     
     stages {
         stage('Checkout Code') {
             steps {
                 checkout scm: [
                     $class: 'GitSCM',
-                    branches: [[name: '*/main']], // or '*/master' depending on your branch
+                    branches: [[name: '*/develop']],   // or '*/master' depending on your branch
                     userRemoteConfigs: [[
                         url: 'https://github.com/ELTANTAOUI-Y7/Projet-SE-.git',
                         credentialsId: '' // Add your GitHub credentials ID if repository is private
