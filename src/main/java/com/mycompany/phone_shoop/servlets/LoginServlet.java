@@ -26,7 +26,7 @@ public class LoginServlet extends HttpServlet {
             // validations 
             
             // authenticating user 
-            UserDao userDao = createUserDao();
+            UserDao userDao=new UserDao(FactoryProvider.getFactory());
             User user = userDao.getUserByEmailAndPassword(email, password);
             HttpSession httpSession=request.getSession();
             if(user == null) {
@@ -64,13 +64,5 @@ public class LoginServlet extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
-    
-    /**
-     * Factory method extracted for testability. Sub-classes or tests can
-     * override this to provide a mocked {@link UserDao}.
-     */
-    protected UserDao createUserDao() {
-        return new UserDao(FactoryProvider.getFactory());
-    }
 
 }
