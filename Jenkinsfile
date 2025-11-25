@@ -22,13 +22,25 @@ pipeline {
         
         stage('Build') {
             steps {
-                sh 'mvn clean compile'
+                script {
+                    if (isUnix()) {
+                        sh 'mvn clean compile'
+                    } else {
+                        bat 'mvn clean compile'
+                    }
+                }
             }
         }
         
         stage('Test') {
             steps {
-                sh 'mvn test'
+                script {
+                    if (isUnix()) {
+                        sh 'mvn test'
+                    } else {
+                        bat 'mvn test'
+                    }
+                }
             }
             post {
                 always {
@@ -43,8 +55,23 @@ pipeline {
                 SONAR_AUTH_TOKEN = credentials('sonarqube') // Store your token in Jenkins credentials
             }
             steps {
-                // Use fully qualified plugin name - no need to add to pom.xml
-                sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar -Dsonar.projectKey=projet-se -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml'
+                script {
+                    def sonarCmd = """mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar ^
+                        -Dsonar.projectKey=projet-se ^
+                        -Dsonar.host.url=%SONAR_HOST_URL% ^
+                        -Dsonar.login=%SONAR_AUTH_TOKEN% ^
+                        -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml"""
+                    def sonarCmdUnix = "mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar " +
+                        "-Dsonar.projectKey=projet-se " +
+                        "-Dsonar.host.url=${SONAR_HOST_URL} " +
+                        "-Dsonar.login=${SONAR_AUTH_TOKEN} " +
+                        "-Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml"
+                    if (isUnix()) {
+                        sh sonarCmdUnix
+                    } else {
+                        bat sonarCmd
+                    }
+                }
             }
         }
         
