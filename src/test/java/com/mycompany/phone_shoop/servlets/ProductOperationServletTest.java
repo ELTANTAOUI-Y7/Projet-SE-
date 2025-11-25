@@ -104,6 +104,37 @@ public class ProductOperationServletTest {
         verify(response).sendRedirect("admin.jsp");
     }
 
+    @Test
+    public void saveFileWritesBytesToDestination() throws Exception {
+        ProductOperationServlet servlet = new ProductOperationServlet();
+        Part part = mock(Part.class);
+        when(part.getInputStream()).thenReturn(new ByteArrayInputStream("data".getBytes()));
+        java.nio.file.Path temp = java.nio.file.Files.createTempFile("product-op", ".bin");
+
+        servlet.saveFile(part, temp.toString());
+
+        assertEquals("data", java.nio.file.Files.readString(temp));
+        java.nio.file.Files.deleteIfExists(temp);
+    }
+
+    @Test
+    public void doGetDelegatesToProcessRequest() throws Exception {
+        TrackingProductOperationServlet servlet = new TrackingProductOperationServlet();
+
+        servlet.doGet(request, response);
+
+        assertTrue(servlet.called);
+    }
+
+    @Test
+    public void doPostDelegatesToProcessRequest() throws Exception {
+        TrackingProductOperationServlet servlet = new TrackingProductOperationServlet();
+
+        servlet.doPost(request, response);
+
+        assertTrue(servlet.called);
+    }
+
     private static class TestableProductOperationServlet extends ProductOperationServlet {
         private final CategoryDao categoryDao;
         private final ProductDao productDao;
@@ -129,6 +160,15 @@ public class ProductOperationServletTest {
         @Override
         protected void saveFile(Part part, String path) throws IOException {
             savedFile = true;
+        }
+    }
+
+    private static class TrackingProductOperationServlet extends ProductOperationServlet {
+        private boolean called;
+
+        @Override
+        protected void processRequest(HttpServletRequest request, HttpServletResponse response) {
+            called = true;
         }
     }
 }

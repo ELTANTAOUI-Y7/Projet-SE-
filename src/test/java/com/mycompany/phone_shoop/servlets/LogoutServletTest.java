@@ -27,5 +27,32 @@ public class LogoutServletTest {
         verify(session).removeAttribute("current-user");
         verify(response).sendRedirect("login.jsp");
     }
+
+    @Test
+    public void doGetDelegatesToProcessRequest() throws Exception {
+        TrackingLogoutServlet servlet = new TrackingLogoutServlet();
+
+        servlet.doGet(mock(HttpServletRequest.class), mock(HttpServletResponse.class));
+
+        org.junit.Assert.assertTrue(servlet.called);
+    }
+
+    @Test
+    public void doPostDelegatesToProcessRequest() throws Exception {
+        TrackingLogoutServlet servlet = new TrackingLogoutServlet();
+
+        servlet.doPost(mock(HttpServletRequest.class), mock(HttpServletResponse.class));
+
+        org.junit.Assert.assertTrue(servlet.called);
+    }
+
+    private static class TrackingLogoutServlet extends LogoutServlet {
+        private boolean called;
+
+        @Override
+        protected void processRequest(HttpServletRequest request, HttpServletResponse response) {
+            called = true;
+        }
+    }
 }
 
