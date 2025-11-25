@@ -19,6 +19,7 @@ public class RegisterServlet extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         try ( PrintWriter out = response.getWriter()) {
           
+            HttpSession httpSession=request.getSession();
             try {
                 // get the parameters of http.1/post
                 String userName = request.getParameter("name");
@@ -43,13 +44,14 @@ public class RegisterServlet extends HttpServlet {
                 hibernateSession.close();
                 
                 // create a session with message for registered user
-                HttpSession httpSession=request.getSession();
                 httpSession.setAttribute("message", "Marhba :) You have successfuly registerd in our website !! Your id : "+userId);
                 
                 response.sendRedirect("register.jsp");
                 
             } catch(Exception e) {
                 e.printStackTrace();
+                httpSession.setAttribute("message", "Something went wrong !! Please try again later.");
+                response.sendRedirect("register.jsp");
             }
             
             
