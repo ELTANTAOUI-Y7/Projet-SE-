@@ -9,7 +9,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import org.junit.Before;
 import org.junit.Test;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -67,6 +69,37 @@ public class LoginServletTest {
         verify(response).sendRedirect("index.jsp");
     }
 
+    @Test
+    public void processRequestWritesMessageForUnknownUserType() throws Exception {
+        User unknown = new User();
+        unknown.setUserType("vip");
+        TestableLoginServlet servlet = new TestableLoginServlet(unknown);
+
+        servlet.processRequest(request, response);
+
+        verify(session).setAttribute("current-user", unknown);
+        verify(response, never()).sendRedirect(anyString());
+        org.junit.Assert.assertTrue(stringWriter.toString().contains("We have not identified user type"));
+    }
+
+    @Test
+    public void doGetDelegatesToProcessRequest() throws Exception {
+        TrackingLoginServlet servlet = new TrackingLoginServlet();
+
+        servlet.doGet(request, response);
+
+        org.junit.Assert.assertTrue(servlet.called);
+    }
+
+    @Test
+    public void doPostDelegatesToProcessRequest() throws Exception {
+        TrackingLoginServlet servlet = new TrackingLoginServlet();
+
+        servlet.doPost(request, response);
+
+        org.junit.Assert.assertTrue(servlet.called);
+    }
+
     private static class TestableLoginServlet extends LoginServlet {
 
         private final User userToReturn;
@@ -80,6 +113,15 @@ public class LoginServletTest {
             UserDao userDao = mock(UserDao.class);
             when(userDao.getUserByEmailAndPassword("mail@host.com", "secret")).thenReturn(userToReturn);
             return userDao;
+        }
+    }
+
+    private static class TrackingLoginServlet extends LoginServlet {
+        private boolean called;
+
+        @Override
+        protected void processRequest(HttpServletRequest request, HttpServletResponse response) {
+            called = true;
         }
     }
 }

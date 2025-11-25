@@ -62,6 +62,24 @@ public class RegisterServletTest {
         verify(response).sendRedirect("register.jsp");
     }
 
+    @Test
+    public void doGetDelegatesToProcessRequest() throws Exception {
+        TrackingRegisterServlet servlet = new TrackingRegisterServlet();
+
+        servlet.doGet(request, response);
+
+        org.junit.Assert.assertTrue(servlet.called);
+    }
+
+    @Test
+    public void doPostDelegatesToProcessRequest() throws Exception {
+        TrackingRegisterServlet servlet = new TrackingRegisterServlet();
+
+        servlet.doPost(request, response);
+
+        org.junit.Assert.assertTrue(servlet.called);
+    }
+
     private static class TestableRegisterServlet extends RegisterServlet {
         private final SessionFactory sessionFactory;
         private final Session session;
@@ -82,6 +100,15 @@ public class RegisterServletTest {
             return sessionFactory;
         }
 
+    }
+
+    private static class TrackingRegisterServlet extends RegisterServlet {
+        private boolean called;
+
+        @Override
+        protected void processRequest(HttpServletRequest request, HttpServletResponse response) {
+            called = true;
+        }
     }
 }
 
