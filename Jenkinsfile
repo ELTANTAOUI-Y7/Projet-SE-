@@ -63,14 +63,14 @@ pipeline {
                 }
             }
         }
-        stage('4. Generate JAR Package') {
+        stage('4. Generate WAR Package') {
             steps {
-                echo 'Creating JAR package...'
+                echo 'Creating WAR package...'
                 sh 'mvn package -DskipTests'
             }
             post {
                 success {
-                    archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true, fingerprint: true
+                    archiveArtifacts artifacts: '**/target/*.war', allowEmptyArchive: true, fingerprint: true
                 }
             }
         }
