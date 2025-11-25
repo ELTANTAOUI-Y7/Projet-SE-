@@ -41,6 +41,28 @@ public class ProductOperationServletTest {
     }
 
     @Test
+    public void invalidOperationSetsMessage() throws Exception {
+        when(request.getParameter("operation")).thenReturn(null);
+
+        TestableProductOperationServlet servlet = new TestableProductOperationServlet();
+        servlet.processRequest(request, response);
+
+        verify(session).setAttribute("message", "Invalid operation");
+        verify(response).sendRedirect("admin.jsp");
+    }
+
+    @Test
+    public void unknownOperationSetsFallbackMessage() throws Exception {
+        when(request.getParameter("operation")).thenReturn("removeProduct");
+
+        TestableProductOperationServlet servlet = new TestableProductOperationServlet();
+        servlet.processRequest(request, response);
+
+        verify(session).setAttribute("message", "Unknown operation");
+        verify(response).sendRedirect("admin.jsp");
+    }
+
+    @Test
     public void addCategoryPersistsCategoryAndRedirects() throws Exception {
         when(request.getParameter("operation")).thenReturn("addCategory");
         when(request.getParameter("catTitle")).thenReturn("Phones");
