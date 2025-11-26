@@ -1,6 +1,6 @@
 # Project information
-sonar.projectKey=My-Java-App-Pipeline
-sonar.projectName=My-Java-App-Pipeline
+sonar.projectKey=Ecom
+sonar.projectName=Ecom
 sonar.projectVersion=1.0
 
 # Source and binary paths

@@ -1,111 +1,65 @@
 pipeline {
     agent any
-    tools {
+    
+    tools { 
+        // Configure JDK tool in Jenkins Global Tool Configuration (e.g., JDK-11, JDK-17, or JDK)
         maven 'Maven-3.9.11'
-        jdk 'JDK-17'
+        jdk 'JDK-17'// Configure Maven tool in Jenkins Global Tool Configuration
     }
-
-    environment {
-        MAVEN_OPTS = '-Xmx2048m'
-    }
-
+    
     stages {
-        stage('1. Clone Repository') {
+        stage('Checkout Code') {
             steps {
-                echo 'Cloning repository from GitHub...'
-                script {
-                    try {
-                        checkout([
-                            $class: 'GitSCM',
-                            branches: [[name: '*/Yasser']],
-                            userRemoteConfigs: [[
-                                url: 'https://github.com/ELTANTAOUI-Y7/Projet-SE-.git',
-                                credentialsId: 'github-token' // Make sure this matches your credential ID in Jenkins
-                            ]],
-                            extensions: [[$class: 'CloneOption', depth: 1, shallow: true, timeout: 10]]
-                        ])
-                    } catch (Exception e) {
-                        echo "Error cloning repository: ${e.getMessage()}"
-                        echo "Please verify:"
-                        echo "1. GitHub credential ID 'github-token' exists in Jenkins"
-                        echo "2. Your GitHub token has 'repo' scope"
-                        echo "3. You have collaborator access to the repository"
-                        throw e
-                    }
-                }
+                checkout scm: [
+                    $class: 'GitSCM',
+                    branches: [[name: '*/Yasser']], // or '*/master' depending on your branch
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/ELTANTAOUI-Y7/Projet-SE-.git',
+                        credentialsId: '' // Add your GitHub credentials ID if repository is private
+                    ]]
+                ]
             }
         }
-
-        stage('2. Compile Project') {
+        
+        stage('Build') {
             steps {
-                echo 'Compiling Maven project...'
-                sh 'mvn clean compile -DskipTests'
+                sh 'mvn clean compile'
             }
         }
-         stage('3. Run Tests with Failure Tolerance') {
+        
+        stage('Test') { 
             steps {
-                script {
-                    // Run tests but don't fail the pipeline on test failures
-                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                        sh '''
-                            # Skip problematic tests
-                            mvn test \
-                                -DskipTests=false \
-                                -Dtest="!DTOValidationTest,!MailServiceTest,!HibernateTimeZoneIT,!OperationResourceAdditionalTest" \
-                                -DfailIfNoTests=false
-                        '''
-                    }
-                }
+                sh 'mvn test'
             }
             post {
                 always {
-                    junit 'target/surefire-reports/*.xml'
+                    junit 'target/surefire-reports/*.xml' // Publish test results
                 }
             }
         }
-        stage('4. Generate JAR Package') {
+        
+        stage('SonarQube Analysis') {
+            environment {
+                SONAR_HOST_URL = 'http://localhost:9000' // Replace with your SonarQube URL
+                SONAR_AUTH_TOKEN = credentials('sonarqube') // Store your token in Jenkins credentials
+            }
             steps {
-                echo 'Creating JAR package...'
-                sh 'mvn package -DskipTests'
-            }
-            post {
-                success {
-                    archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true, fingerprint: true
-                }
+                // Use fully qualified plugin name - no need to add to pom.xml
+                sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar -Dsonar.projectKey=projet-se -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml'
             }
         }
-
-        stage('5. SonarQube Analysis') {
-            steps {
-                echo 'Running SonarQube analysis...'
-                timeout(time: 15, unit: 'MINUTES') {
-                    withSonarQubeEnv('SonarQube') {
-                        sh 'mvn sonar:sonar -Dsonar.projectKey=yourwaytoltaly -DskipTests'
-                    }
-                }
-            }
-        }
-
-        stage('6. Quality Gate Check') {
-            steps {
-                echo 'Checking Quality Gate...'
-                timeout(time: 10, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: false
-                }
-            }
-        }
+        
     }
-
+    
     post {
+        always {
+            cleanWs() // Clean workspace after build
+        }
         success {
-            echo '✓ Pipeline executed successfully!'
+            echo 'Pipeline succeeded!'
         }
         failure {
-            echo '✗ Pipeline failed.'
-        }
-        always {
-            echo 'Cleaning workspace...'
-            cleanWs()
-        }
+            echo 'Pipeline failed!'
     }
+}
 }
