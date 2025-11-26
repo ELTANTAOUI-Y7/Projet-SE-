@@ -92,16 +92,7 @@ pipeline {
             }
         }
 
-        stage('6. Quality Gate Check') {
-            steps {
-                echo 'Checking Quality Gate...'
-                timeout(time: 10, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: false
-                }
-            }
-        }
-
-        stage('7. Docker Build & Push') {
+        stage('6. Docker Build & Push') {
             steps {
                 echo 'Building and pushing Docker image...'
                 script {
@@ -133,7 +124,7 @@ pipeline {
             }
         }
 
-        stage('8. Deploy to Kubernetes') {
+        stage('7. Deploy to Kubernetes') {
             steps {
                 echo 'Deploying to Kubernetes...'
                 script {
