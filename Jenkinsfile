@@ -1,14 +1,9 @@
 pipeline {
     agent any
-    
-    tools { 
-        // Configure JDK tool in Jenkins Global Tool Configuration (e.g., JDK-11, JDK-17, or JDK)
+    tools {
         maven 'Maven-3.9.11'
-        jdk 'JDK-17'// Configure Maven tool in Jenkins Global Tool Configuration
+        jdk 'JDK-17'
     }
-<<<<<<< HEAD
-    
-=======
 
     environment {
         MAVEN_OPTS = '-Xmx2048m'
@@ -20,20 +15,9 @@ pipeline {
         K8S_NAMESPACE = 'phone-shop'
     }
 
->>>>>>> 36f0adca2296487eed248e2e220ce4ba0fd6e518
     stages {
-        stage('Checkout Code') {
+        stage('1. Clone Repository') {
             steps {
-<<<<<<< HEAD
-                checkout scm: [
-                    $class: 'GitSCM',
-                    branches: [[name: '*/Yasser']], // or '*/master' depending on your branch
-                    userRemoteConfigs: [[
-                        url: 'https://github.com/ELTANTAOUI-Y7/Projet-SE-.git',
-                        credentialsId: '' // Add your GitHub credentials ID if repository is private
-                    ]]
-                ]
-=======
                 echo 'Cloning repository from GitHub...'
                 script {
                     try {
@@ -55,37 +39,15 @@ pipeline {
                         throw e
                     }
                 }
->>>>>>> 36f0adca2296487eed248e2e220ce4ba0fd6e518
             }
         }
-        
-        stage('Build') {
+
+        stage('2. Compile Project') {
             steps {
-                sh 'mvn clean compile'
+                echo 'Compiling Maven project...'
+                sh 'mvn clean compile -DskipTests'
             }
         }
-<<<<<<< HEAD
-        
-        stage('Test') { 
-            steps {
-                sh 'mvn test'
-            }
-            post {
-                always {
-                    junit 'target/surefire-reports/*.xml' // Publish test results
-                }
-            }
-        }
-        
-        stage('SonarQube Analysis') {
-            environment {
-                SONAR_HOST_URL = 'http://localhost:9000' // Replace with your SonarQube URL
-                SONAR_AUTH_TOKEN = credentials('sonarqube') // Store your token in Jenkins credentials
-            }
-            steps {
-                // Use fully qualified plugin name - no need to add to pom.xml
-                sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar -Dsonar.projectKey=projet-se -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml'
-=======
 
         stage('3. Run Tests with Failure Tolerance') {
             steps {
@@ -138,7 +100,7 @@ pipeline {
                     // Build Docker image
                     sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
                     sh "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
-                    
+
                     // Login and push to Docker Hub
                     withCredentials([usernamePassword(
                         credentialsId: "${DOCKER_HUB_CREDENTIALS}",
@@ -171,7 +133,7 @@ pipeline {
                     sh """
                         # Update the image tag in app-deployment.yaml
                         sed -i 's|image: ${DOCKER_IMAGE}:.*|image: ${DOCKER_IMAGE}:${DOCKER_TAG}|g' k8s/app-deployment.yaml
-                        
+
                         # Apply Kubernetes configurations
                         kubectl apply -f k8s/namespace.yaml
                         kubectl apply -f k8s/mysql-secret.yaml
@@ -182,28 +144,17 @@ pipeline {
                         kubectl apply -f k8s/app-deployment.yaml
                         kubectl apply -f k8s/app-service.yaml
                         kubectl apply -f k8s/app-ingress.yaml
-                        
+
                         # Wait for deployment rollout
                         kubectl rollout status deployment/phone-shop -n ${K8S_NAMESPACE} --timeout=300s
                     """
                 }
->>>>>>> 36f0adca2296487eed248e2e220ce4ba0fd6e518
             }
         }
-        
     }
-    
+
     post {
-        always {
-            cleanWs() // Clean workspace after build
-        }
         success {
-<<<<<<< HEAD
-            echo 'Pipeline succeeded!'
-        }
-        failure {
-            echo 'Pipeline failed!'
-=======
             echo '''
             ✅ ═══════════════════════════════════════════════════════════
             ✅  PIPELINE COMPLETED SUCCESSFULLY!
@@ -222,7 +173,5 @@ pipeline {
             echo 'Cleaning workspace...'
             cleanWs()
         }
->>>>>>> 36f0adca2296487eed248e2e220ce4ba0fd6e518
     }
-}
 }
