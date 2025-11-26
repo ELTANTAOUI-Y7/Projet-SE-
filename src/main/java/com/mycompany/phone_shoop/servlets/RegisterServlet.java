@@ -36,12 +36,13 @@ public class RegisterServlet extends HttpServlet {
                 // creating user object to store the data 
                 User user =new User(userName, userEmail, userPassword, userPhone,"default.jpg", userAddress,"normal");
                 
-                // using hibernate and perform a transaction
-                Session hibernateSession = getSessionFactory().openSession();
-                    Transaction tx= hibernateSession.beginTransaction();
-                    int userId =(int) hibernateSession.save(user);
+                // using hibernate and perform a transaction (try-with-resources ensures Session is closed)
+                int userId;
+                try (Session hibernateSession = getSessionFactory().openSession()) {
+                    Transaction tx = hibernateSession.beginTransaction();
+                    userId = (int) hibernateSession.save(user);
                     tx.commit();
-                hibernateSession.close();
+                }
                 
                 // create a session with message for registered user
                 httpSession.setAttribute("message", "Marhba :) You have successfuly registerd in our website !! Your id : "+userId);
