@@ -45,7 +45,7 @@ pipeline {
         stage('2. Compile Project') {
             steps {
                 echo 'Compiling Maven project...'
-                sh 'mvn clean compile -DskipTests'
+                sh 'mvn clean compile -DskipTests -Dmaven.compiler.release=8'
             }
         }
 
@@ -57,7 +57,8 @@ pipeline {
                             mvn test \
                                 -DskipTests=false \
                                 -Dtest="!DTOValidationTest,!MailServiceTest,!HibernateTimeZoneIT,!OperationResourceAdditionalTest" \
-                                -DfailIfNoTests=false
+                                -DfailIfNoTests=false \
+                                -Dmaven.compiler.release=8
                         '''
                     }
                 }
@@ -72,7 +73,7 @@ pipeline {
         stage('4. Generate WAR Package') {
             steps {
                 echo 'Creating WAR package...'
-                sh 'mvn package -DskipTests'
+                sh 'mvn package -DskipTests -Dmaven.compiler.release=8'
             }
             post {
                 success {
@@ -86,13 +87,22 @@ pipeline {
                 echo 'Running SonarQube analysis...'
                 timeout(time: 15, unit: 'MINUTES') {
                     withSonarQubeEnv('SonarQube') {
-                        sh 'mvn sonar:sonar -Dsonar.projectKey=yourwaytoltaly -DskipTests'
+                        sh 'mvn sonar:sonar -Dsonar.projectKey=yourwaytoltaly -DskipTests -Dmaven.compiler.release=8'
                     }
                 }
             }
         }
 
-        stage('6. Docker Build & Push') {
+        stage('6. Quality Gate Check') {
+            steps {
+                echo 'Checking Quality Gate...'
+                timeout(time: 10, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: false
+                }
+            }
+        }
+
+        stage('7. Docker Build & Push') {
             steps {
                 echo 'Building and pushing Docker image...'
                 script {
@@ -124,7 +134,7 @@ pipeline {
             }
         }
 
-        stage('7. Deploy to Kubernetes') {
+        stage('8. Deploy to Kubernetes') {
             steps {
                 echo 'Deploying to Kubernetes...'
                 script {
