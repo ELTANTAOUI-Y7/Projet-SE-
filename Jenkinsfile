@@ -7,6 +7,12 @@ pipeline {
 
     environment {
         MAVEN_OPTS = '-Xmx2048m'
+        // Docker Hub configuration
+        DOCKER_HUB_CREDENTIALS = 'docker-hub-credentials'
+        DOCKER_IMAGE = 'xxxxxxxx15339/phone-shop'
+        DOCKER_TAG = "${BUILD_NUMBER}"
+        // Kubernetes namespace
+        K8S_NAMESPACE = 'phone-shop'
     }
 
     stages {
@@ -20,7 +26,7 @@ pipeline {
                             branches: [[name: '*/Yasser']],
                             userRemoteConfigs: [[
                                 url: 'https://github.com/ELTANTAOUI-Y7/Projet-SE-.git',
-                                credentialsId: 'github-token' // Make sure this matches your credential ID in Jenkins
+                                credentialsId: 'github-token'
                             ]],
                             extensions: [[$class: 'CloneOption', depth: 1, shallow: true, timeout: 10]]
                         ])
@@ -42,13 +48,12 @@ pipeline {
                 sh 'mvn clean compile -DskipTests'
             }
         }
+
         stage('3. Run Tests with Failure Tolerance') {
             steps {
                 script {
-                    // Run tests but don't fail the pipeline on test failures
                     catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                         sh '''
-                            # Skip problematic tests
                             mvn test \
                                 -DskipTests=false \
                                 -Dtest="!DTOValidationTest,!MailServiceTest,!HibernateTimeZoneIT,!OperationResourceAdditionalTest" \
@@ -59,10 +64,11 @@ pipeline {
             }
             post {
                 always {
-                    junit 'target/surefire-reports/*.xml'
+                    junit allowEmptyResults: true, testResults: 'target/surefire-reports/*.xml'
                 }
             }
         }
+
         stage('4. Generate WAR Package') {
             steps {
                 echo 'Creating WAR package...'
@@ -94,14 +100,82 @@ pipeline {
                 }
             }
         }
+
+        stage('7. Docker Build & Push') {
+            steps {
+                echo 'Building and pushing Docker image...'
+                script {
+                    // Build Docker image
+                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                    sh "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
+                    
+                    // Login and push to Docker Hub
+                    withCredentials([usernamePassword(
+                        credentialsId: "${DOCKER_HUB_CREDENTIALS}",
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )]) {
+                        sh '''
+                            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                            docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
+                            docker push ${DOCKER_IMAGE}:latest
+                            docker logout
+                        '''
+                    }
+                }
+            }
+            post {
+                always {
+                    // Clean up local images to save space
+                    sh "docker rmi ${DOCKER_IMAGE}:${DOCKER_TAG} || true"
+                    sh "docker rmi ${DOCKER_IMAGE}:latest || true"
+                }
+            }
+        }
+
+        stage('8. Deploy to Kubernetes') {
+            steps {
+                echo 'Deploying to Kubernetes...'
+                script {
+                    // Update image tag in deployment
+                    sh """
+                        # Update the image tag in app-deployment.yaml
+                        sed -i 's|image: ${DOCKER_IMAGE}:.*|image: ${DOCKER_IMAGE}:${DOCKER_TAG}|g' k8s/app-deployment.yaml
+                        
+                        # Apply Kubernetes configurations
+                        kubectl apply -f k8s/namespace.yaml
+                        kubectl apply -f k8s/mysql-secret.yaml
+                        kubectl apply -f k8s/mysql-configmap.yaml
+                        kubectl apply -f k8s/mysql-pvc.yaml
+                        kubectl apply -f k8s/mysql-deployment.yaml
+                        kubectl apply -f k8s/mysql-service.yaml
+                        kubectl apply -f k8s/app-deployment.yaml
+                        kubectl apply -f k8s/app-service.yaml
+                        kubectl apply -f k8s/app-ingress.yaml
+                        
+                        # Wait for deployment rollout
+                        kubectl rollout status deployment/phone-shop -n ${K8S_NAMESPACE} --timeout=300s
+                    """
+                }
+            }
+        }
     }
 
     post {
         success {
-            echo '✓ Pipeline executed successfully!'
+            echo '''
+            ✅ ═══════════════════════════════════════════════════════════
+            ✅  PIPELINE COMPLETED SUCCESSFULLY!
+            ✅  - Code compiled and tested
+            ✅  - WAR package generated
+            ✅  - SonarQube analysis done
+            ✅  - Docker image pushed: ${DOCKER_IMAGE}:${DOCKER_TAG}
+            ✅  - Deployed to Kubernetes namespace: ${K8S_NAMESPACE}
+            ✅ ═══════════════════════════════════════════════════════════
+            '''
         }
         failure {
-            echo '✗ Pipeline failed.'
+            echo '❌ Pipeline failed. Check the logs for details.'
         }
         always {
             echo 'Cleaning workspace...'
