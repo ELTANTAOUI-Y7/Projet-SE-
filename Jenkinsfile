@@ -86,7 +86,8 @@ pipeline {
                 echo 'Running SonarQube analysis...'
                 timeout(time: 15, unit: 'MINUTES') {
                     withSonarQubeEnv('SonarQube') {
-                        sh 'mvn sonar:sonar -Dsonar.projectKey=yourwaytoltaly -DskipTests'
+                        // Exclude JS/TS from analysis to avoid JS WebSocket analyzer issues on Jenkins
+                        sh 'mvn sonar:sonar -Dsonar.projectKey=yourwaytoltaly -DskipTests -Dsonar.exclusions=**/*.js,**/*.ts'
                     }
                 }
             }
