@@ -21,13 +21,9 @@ data:
 
       # Kubernetes nodes
       - job_name: 'kubernetes-nodes'
-        kubernetes_sd_configs:
-          - role: node
-        relabel_configs:
-          - source_labels: [__address__]
-            regex: '(.+):10250'
-            replacement: '${1}:9100'
-            target_label: __address__
+        static_configs:
+          - targets:
+              - 'node-exporter-service.phone-shop.svc.cluster.local:9100'
 
       # Kubernetes pods
       - job_name: 'kubernetes-pods'
@@ -49,6 +45,12 @@ data:
             regex: ([^:]+)(?::\d+)?;(\d+)
             replacement: $1:$2
             target_label: __address__
+
+      # Kubernetes cluster state metrics
+      - job_name: 'kube-state-metrics'
+        static_configs:
+          - targets:
+              - 'kube-state-metrics-service.phone-shop.svc.cluster.local:8080'
 
       # Phone Shop application
       - job_name: 'phone-shop-app'
