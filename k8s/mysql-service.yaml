@@ -1,0 +1,21 @@
+# ============================================
+# MySQL Service
+# Internal DNS: mysql.phone-shop.svc.cluster.local
+# ============================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: phone-shop
+  labels:
+    app: mysql
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3306
+      targetPort: 3306
+      protocol: TCP
+      name: mysql
+  selector:
+    app: mysql
+

@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+
+# IDE files
+.idea
+*.iml
+.vscode
+.settings
+.project
+.classpath
+nb-configuration.xml
+
+# Build output (will be rebuilt in container)
+target/
+
+# Docker files (not needed inside image)
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Kubernetes configs
+k8s/
+
+# Documentation
+docs/
+*.md
+
+# CI/CD
+Jenkinsfile
+jenkins-commands.txt
+sonar-project.properties.txt
+
+# Monitoring (not part of app)
+prometheus/
+grafana/
+
+# Logs
+*.log

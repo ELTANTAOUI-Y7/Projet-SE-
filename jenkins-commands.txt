@@ -1,0 +1,14 @@
+mvn clean compile
+
+mvn clean test
+
+mvn jacoco:report
+
+mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar \
+    -Dsonar.projectKey=projet-se \
+    -Dsonar.host.url=${SONAR_HOST_URL} \
+    -Dsonar.login=${SONAR_AUTH_TOKEN} \
+    -Dsonar.java.coveragePlugin=jacoco \
+    -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+    -Dsonar.coverage.exclusions=**/entities/**,**/servlets/**,**/helper/**
+
