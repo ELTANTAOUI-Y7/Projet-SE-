@@ -23,7 +23,7 @@ pipeline {
                     try {
                         checkout([
                             $class: 'GitSCM',
-                            branches: [[name: '*/Yasser']],
+                            branches: [[name: '*/souhaib']],
                             userRemoteConfigs: [[
                                 url: 'https://github.com/ELTANTAOUI-Y7/Projet-SE-.git',
                                 credentialsId: 'github-token'
