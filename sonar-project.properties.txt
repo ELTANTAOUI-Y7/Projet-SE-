@@ -1,6 +1,16 @@
 # Project information
+<<<<<<< HEAD
 sonar.projectKey=Ecom
 sonar.projectName=Ecom
+=======
+<<<<<<< HEAD
+sonar.projectKey=Ecom
+sonar.projectName=Ecom
+=======
+sonar.projectKey=My-Java-App-Pipeline
+sonar.projectName=My-Java-App-Pipeline
+>>>>>>> afd0cc64c82fa7dac98bb8ca3d39bffbcb448224
+>>>>>>> 36f0adca2296487eed248e2e220ce4ba0fd6e518
 sonar.projectVersion=1.0
 
 # Source and binary paths

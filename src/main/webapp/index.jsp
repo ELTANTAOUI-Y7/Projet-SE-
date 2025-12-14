@@ -9,6 +9,10 @@
                 <%
                     String cat=request.getParameter("category");
                     
+                    if(FactoryProvider.getFactory() == null) {
+                        throw new RuntimeException("Database connection failed. Please check your Hibernate configuration and MySQL connection.");
+                    }
+                    
                     ProductDao productDao = new ProductDao(FactoryProvider.getFactory());
                     List<Product> plist = null;
                     if(cat==null||cat.trim().equals("all")) {                    

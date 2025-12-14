@@ -1,0 +1,12 @@
+# ============================================
+# ConfigMap for MySQL Configuration
+# Non-sensitive configuration data
+# ============================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-config
+  namespace: phone-shop
+data:
+  mysql-database: phone_shoop
+

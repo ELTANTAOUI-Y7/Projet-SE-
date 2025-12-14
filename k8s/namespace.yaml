@@ -1,0 +1,12 @@
+# ============================================
+# Namespace for Phone Shop Application
+# Isolates all resources in a dedicated space
+# ============================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: phone-shop
+  labels:
+    app: phone-shop
+    environment: production
+
