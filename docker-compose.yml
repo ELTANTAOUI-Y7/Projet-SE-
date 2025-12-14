@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: phone-shop-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: phone_shoop
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - phone-shop-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Phone Shop Application--
+  phone-shop:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: phone-shop-app
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=phone_shoop
+      - DB_USER=root
+      - DB_PASSWORD=root
+    ports:
+      - "8081:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - phone-shop-network
+    restart: unless-stopped
+
+networks:
+  phone-shop-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
