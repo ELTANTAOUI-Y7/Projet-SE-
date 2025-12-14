@@ -19,6 +19,6 @@ scrape_configs:
   # Jenkins
   - job_name: 'jenkins'
     static_configs:
-      - targets: ['localhost:8090']  # Access host Jenkins from Docker
+      - targets: ['127.0.0.1:8090']  # Access host Jenkins from Docker
     metrics_path: /prometheus
     scrape_interval: 30s
