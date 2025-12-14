@@ -3,13 +3,8 @@
 "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
 <hibernate-configuration>
     <session-factory>
-<<<<<<< HEAD
         <property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
-        <property name="connection.url" >jdbc:mysql://localhost:3306/phone_shoop?useSSL=false&amp;serverTimezone=UTC</property>
-=======
-        <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
-        <property name="connection.url">jdbc:mysql://mysql:3306/phone_shoop</property>
->>>>>>> eb4d202808ddd8ec409912adc65bf9777e82e3ed
+        <property name="connection.url">jdbc:mysql://localhost:3306/phone_shoop?useSSL=false&amp;serverTimezone=UTC</property>
         <property name="connection.username">root</property>
         <property name="connection.password">root</property>
         <property name="dialect">org.hibernate.dialect.MySQL8Dialect</property>
