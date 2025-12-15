@@ -31,7 +31,7 @@ spec:
       containers:
         - name: phone-shop
           # Docker Hub image
-          image: xxxxxxxx15339/phone-shop:1.0
+          image: xxxxxxxx15339/phone-shop:47
           imagePullPolicy: Always
           ports:
             - containerPort: 8080

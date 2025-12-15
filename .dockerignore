@@ -1,3 +1,16 @@
+target
+.git
+.idea
+.vscode
+node_modules
+*.log
+*.tmp
+*.swp
+*.iml
+Dockerfile~
+**/phone_shoop-1.0-SNAPSHOT.war
+**/phone_shoop-1.0-SNAPSHOT
+
 # Git
 .git
 .gitignore

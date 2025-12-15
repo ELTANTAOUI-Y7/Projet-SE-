@@ -101,16 +101,56 @@ pipeline {
                     sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
                     sh "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
 
-                    // Login and push to Docker Hub
+                    // Login and push to Docker Hub with retries to handle flaky network/registry issues
                     withCredentials([usernamePassword(
                         credentialsId: "${DOCKER_HUB_CREDENTIALS}",
                         usernameVariable: 'DOCKER_USER',
                         passwordVariable: 'DOCKER_PASS'
                     )]) {
                         sh '''
+                            set -e
+
                             echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                            docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
-                            docker push ${DOCKER_IMAGE}:latest
+
+                            max_retries=3
+                            retry_delay=10
+
+                            i=1
+                            while [ "$i" -le "$max_retries" ]; do
+                              echo "Pushing image ${DOCKER_IMAGE}:${DOCKER_TAG} (attempt $i/$max_retries)..."
+                              if docker push ${DOCKER_IMAGE}:${DOCKER_TAG}; then
+                                echo "Successfully pushed ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                                break
+                              fi
+
+                              if [ "$i" -eq "$max_retries" ]; then
+                                echo "Failed to push ${DOCKER_IMAGE}:${DOCKER_TAG} after $max_retries attempts"
+                                exit 1
+                              fi
+
+                              echo "Retrying in ${retry_delay}s..."
+                              sleep "$retry_delay"
+                              i=$((i + 1))
+                            done
+
+                            i=1
+                            while [ "$i" -le "$max_retries" ]; do
+                              echo "Pushing image ${DOCKER_IMAGE}:latest (attempt $i/$max_retries)..."
+                              if docker push ${DOCKER_IMAGE}:latest; then
+                                echo "Successfully pushed ${DOCKER_IMAGE}:latest"
+                                break
+                              fi
+
+                              if [ "$i" -eq "$max_retries" ]; then
+                                echo "Failed to push ${DOCKER_IMAGE}:latest after $max_retries attempts"
+                                exit 1
+                              fi
+
+                              echo "Retrying in ${retry_delay}s..."
+                              sleep "$retry_delay"
+                              i=$((i + 1))
+                            done
+
                             docker logout
                         '''
                     }
